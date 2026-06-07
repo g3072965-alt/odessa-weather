@@ -4,30 +4,29 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Прямой цифровой ID вашего канала для Одессы, который доставит пост на 100%
+# ИСПРАВЛЕНО: Точное имя вашего канала из скриншота (с одной буквой «s»)
 CHANNEL_ID = "@odesa_meteo"
-
-
 
 def run_bot():
     try:
-        # Надежный запрос погоды через wttr.in
+        # Надежный текстовый запрос погоды для Одессы через wttr.in
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
         response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             weather_data = response.text.strip()
+            
             text = (
                 "Доброго ранку, Одесо! 🌊⚓️\n\n"
                 "Погода на сьогодні:\n"
                 f"📊 Дані: {weather_data}\n\n"
-                "Бажаємо вам чутового та продуктивного дня! ✨"
+                "Бажаємо вам чудового та продуктивного дня! ✨"
             )
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Ссылка API с токеном вашего нового бота @odessa_meteo_day_bot
+        # Точный токен вашего нового бота @odessa_meteo_day_bot
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
