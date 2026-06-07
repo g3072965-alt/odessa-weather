@@ -5,10 +5,14 @@ from flask import Flask
 app = Flask(__name__)
 
 CHANNEL_ID = "@odessa_meteo_day"
+# Код автоматически возьмет адрес из настроек Render
+TG_URL = os.environ.get("TG_URL")
 
 def run_bot():
+    if not TG_URL:
+        return "Помилка: Адресу TG_URL не знайдено в налаштуваннях Render!"
+        
     try:
-        # Прямой запрос погоды без посредников
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
         response = requests.get(url, headers=headers, timeout=10)
@@ -24,11 +28,8 @@ def run_bot():
         else:
             return f"Помилка погодного сервісу: {response.status_code}"
 
-        # Абсолютно прямая и жесткая ссылка на API Telegram в одну строку
-        tg_url = "https://telegram.org"
-        
-        # Отправляем запрос и возвращаем результат на экран
-        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        # Отправка сообщения строго по адресу из настроек хостинга
+        tg_res = requests.post(TG_URL.strip(), json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         return f"Успішно! Відповідь Telegram: {tg_res.text}"
         
     except Exception as e:
