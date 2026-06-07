@@ -4,12 +4,10 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Имя вашего канала для отправки
 CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
     try:
-        # Запрос погоды напрямую без прокси
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
         response = requests.get(url, headers=headers, timeout=10)
@@ -25,7 +23,7 @@ def run_bot():
         else:
             return f"Помилка погодного сервісу: {response.status_code}"
 
-        # Жестко прописанная правильная ссылка, которая гарантированно сработает
+        # Абсолютно правильная прямая ссылка
         tg_url = "https://telegram.org"
         
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
