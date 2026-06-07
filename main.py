@@ -5,13 +5,10 @@ from flask import Flask
 app = Flask(__name__)
 
 CHANNEL_ID = "@odessa_meteo_day"
-# Код автоматически возьмет адрес из настроек Render
 TG_URL = os.environ.get("TG_URL")
 
 def run_bot():
-    if not TG_URL:
-        return "Помилка: Адресу TG_URL не знайдено в налаштуваннях Render!"
-        
+    print(True, "=== ЗАПУСК БОТА ===")
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
@@ -20,20 +17,26 @@ def run_bot():
         if response.status_code == 200:
             weather_data = response.text.strip()
             text = (
-                "Доброго ранку, Одесо! 🌊⚓️\n\n"
+                "Доброго ранку, Одесо! 🌊⚓\n\n"
                 "Погода на сьогодні:\n"
                 f"📊 Дані: {weather_data}\n\n"
                 "Бажаємо вам чудового та продуктивного дня! ✨"
             )
         else:
-            return f"Помилка погодного сервісу: {response.status_code}"
+            print(f"Помилка wttr.in: {response.status_code}")
+            return f"Помилка wttr.in: {response.status_code}"
 
-        # Отправка сообщения строго по адресу из настроек хостинга
-        tg_res = requests.post(TG_URL.strip(), json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
-        return f"Успішно! Відповідь Telegram: {tg_res.text}"
+        # Проверяем, откуда брать ссылку: из настроек Render или жестко из кода
+        final_url = TG_URL.strip() if TG_URL else "https://telegram.org"
+        print(f"Отправка на адрес: {final_url}")
+        
+        tg_res = requests.post(final_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        print(f"Ответ от Telegram: {tg_res.text}")
+        return f"Результат: {tg_res.text}"
         
     except Exception as e:
-        return f"Помилка в роботі скрипта: {e}"
+        print(f"КРИТИЧЕСКАЯ ОШИБКА: {e}")
+        return f"Ошибка в коде: {e}"
 
 @app.route('/')
 def index():
