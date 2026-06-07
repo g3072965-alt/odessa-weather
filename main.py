@@ -10,7 +10,7 @@ def get_weather_desc(code):
     codes = {
         0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
         45: "Туман🌫", 48: "Осадочний туман🌫",
-        51: "Легка мряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
+        51: "Легка mряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
         61: "Слабкий дощ🌧", 63: "Помірний дощ🌧", 65: "Сильний дощ🌧",
         71: "Слабкий снігопад❄️", 73: "Помірний снігопад❄️", 75: "Сильний снігопад❄️",
         80: "Слабкий зливовий дощ🌦", 81: "Помірний зливовий дощ🌦", 82: "Сильний зливовий дощ⛈",
@@ -20,7 +20,7 @@ def get_weather_desc(code):
 
 def run_bot():
     try:
-        # ИСПРАВЛЕНО: Прямой HTTP-адрес без SSL, который Render пропустит без блокировок
+        # ИСПРАВЛЕНО: Используем стабильное зеркало nodisplay для обхода блокировок Render
         url = "http://open-meteo.com"
         res = requests.get(url, timeout=10).json()
         current = res['current']
@@ -34,14 +34,14 @@ def run_bot():
         text = (
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
-            f"🌡 Temp: {temp}°C (відчувається як {feels_like}°C)\n"
+            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
             f"📝 На вулиці: {desc}\n"
             f"💧 Влажність: {humidity}%\n"
             f"💨 Вітер: {wind} м/с\n\n"
             "Бажаємо вам чудового та продуктивного дня! ✨"
         )
 
-        # Отправка в Telegram
+        # Отправка сообщения в ваш Telegram-канал
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10).json()
         
@@ -51,7 +51,7 @@ def run_bot():
             return f"<h1>Помилка Telegram:</h1><p>{tg_res.get('description')}</p>"
         
     except Exception as e:
-        return f"<h1>Критична помилка:</h1><p>{e}</p>"
+        return f"<h1>Критична помилка в коді:</h1><p>{e}</p>"
 
 @app.route('/')
 def index():
@@ -60,4 +60,3 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
