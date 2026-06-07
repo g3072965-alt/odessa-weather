@@ -1,49 +1,45 @@
+import os
 import requests
+from flask import Flask
+
+app = Flask(__name__)
 
 BOT_TOKEN = "8822928835:AAEZ_Z0JGDGHTNjDZMz_0hOt7G-k4mvNe1o"
 CHANNEL_ID = "@odessa_meteo_day"
 
-def get_weather_desc(code):
-    codes = {
-        0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
-        45: "Туман🌫", 48: "Осадочний туман🌫",
-        51: "Легка мряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
-        61: "Слабкий дощ🌧", 63: "Помірний дощ🌧", 65: "Сильний дощ🌧",
-        71: "Слабкий снігопад❄️", 73: "Помірний снігопад❄️", 75: "Сильний снігопад❄️",
-        80: "Слабкий зливовий дощ🌦", 81: "Помірний зливовий дощ🌦", 82: "Сильний зливовий дощ⛈",
-        95: "Гроза⛈"
-    }
-    return codes.get(code, "Мінлива хмарність⛅️")
-
 def run_bot():
     try:
-        # Запрос погоды для Одессы (Open-Meteo полностью бесплатен)
-        url = "https://open-meteo.com"
-        res = requests.get(url).json()
-        current = res['current']
+        # Запрашиваем погоду напрямую через wttr.in (без каких-либо прокси!)
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        url = "https://wttr.in"
+        response = requests.get(url, headers=headers, timeout=10)
         
-        temp = round(current['temperature_2m'])
-        feels_like = round(current['apparent_temperature'])
-        desc = get_weather_desc(current['weather_code'])
-        humidity = current['relative_humidity_2m']
-        wind = round(current['wind_speed_10m'], 1)
-        
-        text = (
-            "Доброго ранку, Одесо! 🌊⚓️\n\n"
-            "Погода на сьогодні:\n"
-            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
-            f"📝 На вулиці: {desc}\n"
-            f"💧 Влажність: {humidity}%\n"
-            f"💨 Вітер: {wind} м/с\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
-        )
-        
-        # Отправка в Telegram через вашего бота
+        if response.status_code == 200:
+            weather_data = response.text.strip()
+            text = (
+                "Доброго ранку, Одесо! 🌊⚓️\n\n"
+                "Погода на сьогодні:\n"
+                f"📊 Дані: {weather_data}\n\n"
+                "Бажаємо вам чудового та продуктивного дня! ✨"
+            )
+        else:
+            return f"Помилка погодного сервісу: {response.status_code}"
+
+        # Отправка сообщения в ваш Telegram-канал
         tg_url = f"https://telegram.org{BOT_TOKEN}/sendMessage"
-        requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text})
-        print("Успешно отправлено!")
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        return f"Успішно! Відповідь Telegram: {tg_res.text}"
+        
     except Exception as e:
-        print(f"Ошибка: {e}")
+        return f"Помилка в роботі скрипта: {e}"
+
+# Главная страница вашего сайта. При её открытии будет отправляться погода.
+@app.route('/')
+def index():
+    return run_bot()
 
 if __name__ == "__main__":
-    run_bot()
+    # Обязательная привязка к порту для Render
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
