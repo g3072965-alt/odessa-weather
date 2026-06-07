@@ -4,52 +4,38 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# Ссылка на ваш погодный канал
 CHANNEL_ID = "@odessa_meteo_day"
-
-def get_weather_desc(code):
-    codes = {
-        0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
-        45: "Туман🌫", 48: "Осадочний туман🌫",
-        51: "Легка мряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
-        61: "Слабкий дощ🌧", 63: "Помірний дощ🌧", 65: "Сильний дощ🌧",
-        71: "Слабкий снігопад❄️", 73: "Помірний снігопад❄️", 75: "Сильний снігопад❄️",
-        80: "Слабкий зливовий дощ🌦", 81: "Помірний зливовий дощ🌦", 82: "Сильний зливовий дощ⛈",
-        95: "Гроза⛈"
-    }
-    return codes.get(code, "Мінлива хмарність⛅️")
 
 def run_bot():
     try:
-        # Прямой запрос живой погоды для Одессы
-        url = "http://open-meteo.com"
-        res = requests.get(url, timeout=10).json()
-        current = res['current']
-        
-        temp = round(current['temperature_2m'])
-        feels_like = round(current['apparent_temperature'])
-        desc = get_weather_desc(current['weather_code'])
-        humidity = current['relative_humidity_2m']
-        wind = round(current['wind_speed_10m'], 1)
-        
-        text = (
-            "Доброго ранку, Одесо! 🌊⚓️\n\n"
-            "Погода на сьогодні:\n"
-            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
-            f"📝 На вулиці: {desc}\n"
-            f"💧 Вологість: {humidity}%\n"
-            f"💨 Вітер: {wind} м/с\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
-        )
-
-        # Отправка в Telegram
-        tg_url = "https://telegram.org"
-        response = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        # Сверхнадежный текстовый запрос погоды через wttr.in
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        url = "https://wttr.in"
+        response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
+            # Получаем чистую строку, например: "+22°C Ясно ↑12км/ч"
+            weather_data = response.text.strip()
+            
+            text = (
+                "Доброго ранку, Одесо! 🌊⚓️\n\n"
+                "Погода на сьогодні:\n"
+                f"📊 Дані: {weather_data}\n\n"
+                "Бажаємо вам чудового та продуктивного дня! ✨"
+            )
+        else:
+            return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
+
+        # Прямая отправка в Telegram в текстовом формате без .json()
+        tg_url = "https://telegram.org"
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        
+        if tg_res.status_code == 200:
             return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
         else:
-            return f"<h1>❌ Помилка Telegram: {response.status_code}</h1><p>{response.text}</p>"
-            
+            return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
+        
     except Exception as e:
         return f"<h1>⚠️ Критична помилка в коді: {e}</h1>"
 
