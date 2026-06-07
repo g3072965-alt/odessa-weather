@@ -4,9 +4,14 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# Бот будет автоматически брать секретный токен из настроек Render
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
+    if not BOT_TOKEN:
+        return "Помилка: Секретний BOT_TOKEN не знайдено в налаштуваннях Render!"
+        
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
@@ -23,9 +28,7 @@ def run_bot():
         else:
             return f"Помилка погодного сервісу: {response.status_code}"
 
-        # Абсолютно правильная прямая ссылка
-        tg_url = "https://telegram.org"
-        
+        tg_url = f"https://telegram.org{BOT_TOKEN}/sendMessage"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         return f"Успішно! Відповідь Telegram: {tg_res.text}"
         
@@ -38,5 +41,4 @@ def index():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-app.run(host="0.0.0.0", port=port)
-
+    app.run(host="0.0.0.0", port=port)
