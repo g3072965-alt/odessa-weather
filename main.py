@@ -4,30 +4,42 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Имя вашего канала (с двумя 's')
 CHANNEL_ID = "@odessa_meteo_day"
+
+def run_bot():
+    try:
+        # Сверхнадежный текстовый запрос живой погоды для Одессы через wttr.in
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        url = "https://wttr.in"
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            weather_data = response.text.strip()
+            text = (
+                "Доброго ранку, Одесо! 🌊⚓️\n\n"
+                "Погода на сьогодні:\n"
+                f"📊 Дані: {weather_data}\n\n"
+                "Бажаємо вам чудового та продуктивного дня! ✨"
+            )
+        else:
+            return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
+
+        # Прямая отправка в Telegram со стопроцентно правильным токеном
+        tg_url = "https://telegram.org"
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        
+        # Исправлено: проверяем статус ответа без использования метода .json()
+        if tg_res.status_code == 200:
+            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
+        else:
+            return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
+        
+    except Exception as e:
+        return f"<h1>⚠️ Критична помилка в коді: {e}</h1>"
 
 @app.route('/')
 def index():
-    # Полностью автономный текст, который физически не может выдать ошибку погоды
-    text = (
-        "Доброго ранку, Одесо! 🌊⚓️\n\n"
-        "Погода на сьогодні:\n"
-        "🌡 Температура: +22°C (відчувається як +20°C)\n"
-        "📝 На вулиці: Прекрасний сонячний день ☀️\n"
-        "💧 Вологість: 65%\n"
-        "💨 Вітер: 4.5 м/с\n\n"
-        "Бажаємо вам чутового та продуктивного дня! ✨"
-    )
-    
-    # Прямая отправка в Telegram со стопроцентно правильным токеном (с нулем '0')
-    tg_url = "https://telegram.org"
-    tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10).json()
-    
-    if tg_res.get("ok"):
-        return "<h1>🎉 Успішно! Тестовий пост відправлений в Telegram-канал!</h1>"
-    else:
-        return f"<h1>❌ Помилка Telegram:</h1><p>{tg_res.get('description')}</p>"
+    return run_bot()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
