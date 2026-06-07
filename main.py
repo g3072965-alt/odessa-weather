@@ -5,38 +5,54 @@ from flask import Flask
 app = Flask(__name__)
 
 CHANNEL_ID = "@odessa_meteo_day"
-TG_URL = os.environ.get("TG_URL")
+
+def get_weather_desc(code):
+    # Перевод кодов погоды на украинский язык
+    codes = {
+        0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
+        45: "Туман🌫", 48: "Осадочний туман🌫",
+        51: "Легка мряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
+        61: "Слабкий дощ🌧", 63: "Помірний дощ🌧", 65: "Сильний дощ🌧",
+        71: "Слабкий снігопад❄️", 73: "Помірний снігопад❄️", 75: "Сильний снігопад❄️",
+        80: "Слабкий зливовий дощ🌦", 81: "Помірний зливовий дощ🌦", 82: "Сильний зливовий дощ⛈",
+        95: "Гроза⛈"
+    }
+    return codes.get(code, "Мінлива хмарність⛅️")
 
 def run_bot():
-    print(True, "=== ЗАПУСК БОТА ===")
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        url = "https://wttr.in"
-        response = requests.get(url, headers=headers, timeout=10)
+        # Сверхбыстрый запрос погоды для Одессы через Open-Meteo
+        url = "https://open-meteo.com"
+        res = requests.get(url, timeout=5).json()
+        current = res['current']
         
-        if response.status_code == 200:
-            weather_data = response.text.strip()
-            text = (
-                "Доброго ранку, Одесо! 🌊⚓\n\n"
-                "Погода на сьогодні:\n"
-                f"📊 Дані: {weather_data}\n\n"
-                "Бажаємо вам чудового та продуктивного дня! ✨"
-            )
-        else:
-            print(f"Помилка wttr.in: {response.status_code}")
-            return f"Помилка wttr.in: {response.status_code}"
+        temp = round(current['temperature_2m'])
+        feels_like = round(current['apparent_temperature'])
+        desc = get_weather_desc(current['weather_code'])
+        humidity = current['relative_humidity_2m']
+        wind = round(current['wind_speed_10m'], 1)
+        
+        text = (
+            "Доброго ранку, Одесо! 🌊⚓️\n\n"
+            "Погода на сьогодні:\n"
+            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
+            f"📝 На вулиці: {desc}\n"
+            f"💧 Влажність: {humidity}%\n"
+            f"💨 Вітер: {wind} м/с\n\n"
+            "Бажаємо вам чудового та продуктивного дня! ✨"
+        )
 
-        # Проверяем, откуда брать ссылку: из настроек Render или жестко из кода
-        final_url = TG_URL.strip() if TG_URL else "https://telegram.org"
-        print(f"Отправка на адрес: {final_url}")
+        # Прямая отправка в Telegram
+        tg_url = "https://telegram.org"
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=5).json()
         
-        tg_res = requests.post(final_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
-        print(f"Ответ от Telegram: {tg_res.text}")
-        return f"Результат: {tg_res.text}"
+        if tg_res.get("ok"):
+            return "<h1>Пост успішно відправлений в Telegram-канал! 🎉</h1>"
+        else:
+            return f"<h1>Помилка Telegram:</h1><p>{tg_res.get('description')}</p>"
         
     except Exception as e:
-        print(f"КРИТИЧЕСКАЯ ОШИБКА: {e}")
-        return f"Ошибка в коде: {e}"
+        return f"<h1>Критична помилка:</h1><p>{e}</p>"
 
 @app.route('/')
 def index():
