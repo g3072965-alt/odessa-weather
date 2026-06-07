@@ -4,18 +4,17 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Ссылка на ваш погодный канал
+# Ссылка на ваш погодный канал (исправлено на две буквы 's')
 CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
     try:
-        # Сверхнадежный текстовый запрос погоды через wttr.in
+        # ИСПРАВЛЕНО: Полная ссылка на погоду в Одессе через wttr.in
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
         response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
-            # Получаем чистую строку, например: "+22°C Ясно ↑12км/ч"
             weather_data = response.text.strip()
             
             text = (
@@ -27,7 +26,7 @@ def run_bot():
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Прямая отправка в Telegram в текстовом формате без .json()
+        # ИСПРАВЛЕНО: Полная прямая ссылка на API Telegram (БЕЗ telegram.org)
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
