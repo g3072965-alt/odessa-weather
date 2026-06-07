@@ -4,24 +4,58 @@ from flask import Flask
 
 app = Flask(__name__)
 
+CHANNEL_ID = "@odessa_meteo_day"
+
+def get_weather_desc(code):
+    codes = {
+        0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
+        45: "Туман🌫", 48: "Осадочний туман🌫",
+        51: "Легка мряка🌧", 53: "Помірна мряка🌧", 55: "Щільна мряка🌧",
+        61: "Слабкий дощ🌧", 63: "Помірний дощ🌧", 65: "Сильний дощ🌧",
+        71: "Слабкий снігопад❄️", 73: "Помірний снігопад❄️", 75: "Сильний снігопад❄️",
+        80: "Слабкий зливовий дощ🌦", 81: "Помірний зливовий дощ🌦", 82: "Сильний зливовий дощ⛈",
+        95: "Гроза⛈"
+    }
+    return codes.get(code, "Мінлива хмарність⛅️")
+
+def run_bot():
+    try:
+        # Прямой запрос живой погоды для Одессы
+        url = "http://open-meteo.com"
+        res = requests.get(url, timeout=10).json()
+        current = res['current']
+        
+        temp = round(current['temperature_2m'])
+        feels_like = round(current['apparent_temperature'])
+        desc = get_weather_desc(current['weather_code'])
+        humidity = current['relative_humidity_2m']
+        wind = round(current['wind_speed_10m'], 1)
+        
+        text = (
+            "Доброго ранку, Одесо! 🌊⚓️\n\n"
+            "Погода на сьогодні:\n"
+            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
+            f"📝 На вулиці: {desc}\n"
+            f"💧 Вологість: {humidity}%\n"
+            f"💨 Вітер: {wind} м/с\n\n"
+            "Бажаємо вам чудового та продуктивного дня! ✨"
+        )
+
+        # Отправка в Telegram
+        tg_url = "https://telegram.org"
+        response = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        
+        if response.status_code == 200:
+            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
+        else:
+            return f"<h1>❌ Помилка Telegram: {response.status_code}</h1><p>{response.text}</p>"
+            
+    except Exception as e:
+        return f"<h1>⚠️ Критична помилка в коді: {e}</h1>"
+
 @app.route('/')
 def index():
-    # Текст сообщения
-    text = (
-        "Доброго ранку, Одесо! 🌊⚓️\n\n"
-        "Погода на сьогодні:\n"
-        "🌡 Температура: +22°C (відчувається як +20°C)\n"
-        "📝 На вулиці: Прекрасний сонячний день ☀️\n"
-        "💧 Вологість: 65%\n"
-        "💨 Вітер: 4.5 м/с\n\n"
-        "Бажаємо вам чудового та продуктивного дня! ✨"
-    )
-    
-    # Прямая отправка в Telegram одной строкой
-    tg_url = "https://telegram.org"
-    requests.post(tg_url, json={"chat_id": "@odessa_meteo_day", "text": text}, timeout=10)
-    
-    return "<h1>Повідомлення надіслано! Перевірте свій Telegram-канал @odessa_meteo_day 🎉</h1>"
+    return run_bot()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
