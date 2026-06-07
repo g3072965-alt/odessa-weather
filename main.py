@@ -7,7 +7,6 @@ app = Flask(__name__)
 CHANNEL_ID = "@odessa_meteo_day"
 
 def get_weather_desc(code):
-    # Перевод кодов погоды на украинский язык
     codes = {
         0: "Ясно☀️", 1: "Переважно ясно🌤", 2: "Мінлива хмарність⛅️", 3: "Похмуро☁️",
         45: "Туман🌫", 48: "Осадочний туман🌫",
@@ -21,9 +20,9 @@ def get_weather_desc(code):
 
 def run_bot():
     try:
-        # Сверхбыстрый запрос погоды для Одессы через Open-Meteo
-        url = "https://open-meteo.com"
-        res = requests.get(url, timeout=5).json()
+        # ИСПРАВЛЕНО: Прямой HTTP-адрес без SSL, который Render пропустит без блокировок
+        url = "http://open-meteo.com"
+        res = requests.get(url, timeout=10).json()
         current = res['current']
         
         temp = round(current['temperature_2m'])
@@ -35,16 +34,16 @@ def run_bot():
         text = (
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
-            f"🌡 Температура: {temp}°C (відчувається як {feels_like}°C)\n"
+            f"🌡 Temp: {temp}°C (відчувається як {feels_like}°C)\n"
             f"📝 На вулиці: {desc}\n"
             f"💧 Влажність: {humidity}%\n"
             f"💨 Вітер: {wind} м/с\n\n"
             "Бажаємо вам чудового та продуктивного дня! ✨"
         )
 
-        # Прямая отправка в Telegram
+        # Отправка в Telegram
         tg_url = "https://telegram.org"
-        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=5).json()
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10).json()
         
         if tg_res.get("ok"):
             return "<h1>Пост успішно відправлений в Telegram-канал! 🎉</h1>"
@@ -61,3 +60,4 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
