@@ -19,7 +19,7 @@ def run_bot():
             text = (
                 "Доброго ранку, Одесо! 🌊⚓️\n\n"
                 "Погода на сьогодні:\n"
-                f"📊 Дані: {weather_data}\n\n"
+                f"📊 Данні: {weather_data}\n\n"
                 "Бажаємо вам чудового та продуктивного дня! ✨"
             )
         else:
@@ -42,4 +42,3 @@ if __name__ == "__main__":
     # Обязательная привязка к порту для Render
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
