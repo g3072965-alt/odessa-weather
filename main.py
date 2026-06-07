@@ -4,13 +4,13 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Бот будет автоматически брать секретный токен из настроек Render
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHANNEL_ID = "@odessa_meteo_day"
+# Код берет чистый готовый адрес, который мы сейчас укажем в панели Render
+TG_URL = os.environ.get("TG_URL")
 
 def run_bot():
-    if not BOT_TOKEN:
-        return "Помилка: Секретний BOT_TOKEN не знайдено в налаштуваннях Render!"
+    if not TG_URL:
+        return "Помилка: Секретна адреса TG_URL не знайдена в налаштуваннях Render!"
         
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
@@ -23,13 +23,13 @@ def run_bot():
                 "Доброго ранку, Одесо! 🌊⚓️\n\n"
                 "Погода на сьогодні:\n"
                 f"📊 Дані: {weather_data}\n\n"
-                "Бажаємо вам чудового та продуктивного дня! ✨"
+                "Бажаємо вам чутового та продуктивного дня! ✨"
             )
         else:
             return f"Помилка погодного сервісу: {response.status_code}"
 
-        tg_url = f"https://telegram.org{BOT_TOKEN}/sendMessage"
-        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        # Отправка сообщения строго по адресу из настроек хостинга
+        tg_res = requests.post(TG_URL, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         return f"Успішно! Відповідь Telegram: {tg_res.text}"
         
     except Exception as e:
