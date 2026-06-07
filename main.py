@@ -5,7 +5,9 @@ from flask import Flask
 app = Flask(__name__)
 
 # ИСПРАВЛЕНО: Прямой цифровой ID вашего канала для Одессы, который доставит пост на 100%
-CHANNEL_ID = "-1002220194884"
+CHANNEL_ID = "@odesa_meteo"
+
+
 
 def run_bot():
     try:
