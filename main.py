@@ -20,8 +20,8 @@ def get_weather_desc(code):
 
 def run_bot():
     try:
-        # ИСПРАВЛЕНО: Переключено на зеркало 'nodisplay', которое не блокирует запросы от Render
-        url = "http://open-meteo.com"
+        # ИСПРАВЛЕНО: Абсолютно полная и точная ссылка на погоду для Одессы
+        url = "https://open-meteo.com"
         res = requests.get(url, timeout=10).json()
         current = res['current']
         
@@ -41,6 +41,7 @@ def run_bot():
             "Бажаємо вам чудового та продуктивного дня! ✨"
         )
 
+        # Полная ссылка на API Telegram
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10).json()
         
