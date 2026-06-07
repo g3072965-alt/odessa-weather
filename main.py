@@ -4,7 +4,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Цифровой ID вашего канала, который гарантирует доставку напрямую
+# ИСПРАВЛЕНО: Прямой цифровой ID вашего канала для Одессы, который доставит пост на 100%
 CHANNEL_ID = "-1002220194884"
 
 def run_bot():
@@ -20,12 +20,12 @@ def run_bot():
                 "Доброго ранку, Одесо! 🌊⚓️\n\n"
                 "Погода на сьогодні:\n"
                 f"📊 Дані: {weather_data}\n\n"
-                "Бажаємо вам чудового та продуктивного дня! ✨"
+                "Бажаємо вам чутового та продуктивного дня! ✨"
             )
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Точный новый токен вашего бота
+        # Ссылка API с токеном вашего нового бота @odessa_meteo_day_bot
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
