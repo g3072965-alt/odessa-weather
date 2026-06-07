@@ -4,11 +4,12 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# Имя вашего погодного канала
 CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
     try:
-        # Сверхнадежный текстовый запрос живой погоды для Одессы через wttr.in
+        # Надежный текстовый запрос погоды для Одессы через wttr.in
         headers = {'User-Agent': 'Mozilla/5.0'}
         url = "https://wttr.in"
         response = requests.get(url, headers=headers, timeout=10)
@@ -24,11 +25,10 @@ def run_bot():
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Прямая отправка в Telegram со стопроцентно правильным токеном
+        # Абсолютно новый и чистый токен вашего бота
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
-        # Исправлено: проверяем статус ответа без использования метода .json()
         if tg_res.status_code == 200:
             return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
         else:
