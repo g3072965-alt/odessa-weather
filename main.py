@@ -4,8 +4,8 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Бот отправит сообщение сразу по двум адресам, чтобы исключить путаницу чатов
-CHAT_INPUTS = ["@odesa_meteo", "-1002220194884"]
+# ИСПРАВЛЕНО: Прямая ссылка на ваш приватный чат, куда бот прислал приглашение
+CHANNEL_ID = "https://t.me"
 
 def run_bot():
     try:
@@ -25,15 +25,14 @@ def run_bot():
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Точный токен вашего нового бота @odessa_meteo_day_bot
+        # Точный токен вашего бота
         tg_url = "https://telegram.org"
+        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
-        results = []
-        for chat in CHAT_INPUTS:
-            res = requests.post(tg_url, json={"chat_id": chat, "text": text}, timeout=10)
-            results.append(f"Чат {chat}: {res.status_code}")
-        
-        return f"<h1>🎉 Скрипт виконано!</h1><p>Статуси відправок: {', '.join(results)}</p>"
+        if tg_res.status_code == 200:
+            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram!</h1>"
+        else:
+            return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
         
     except Exception as e:
         return f"<h1>⚠️ Критична помилка в коді: {e}</h1>"
