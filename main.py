@@ -15,17 +15,23 @@ def run_bot():
         req_weather = urllib.request.Request(weather_url, headers={'User-Agent': 'Mozilla/5.0'})
         
         with urllib.request.urlopen(req_weather, timeout=10) as response:
-            weather_data = response.read().decode('utf-8').strip()
+            weather_data = response.text.strip() if hasattr(response, 'text') else response.read().decode('utf-8').strip()
             
         text = (
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
             f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
+            "Бажаємо вам чутового та продуктивного дня! ✨"
         )
 
-        # 2. Прямая системная отправка в Telegram без сторонних библиотек
-        tg_url = "https://telegram.org"
+        # 2. Маскируем адрес API от кэша Render (собираем из кусочек)
+        part1 = "https://api."
+        part2 = "telegram"
+        part3 = ".org/bot"
+        token = "8959094212:AAEI5eaN8qGNnk5t8gAOIy7fVVLgNPuYpr4"
+        method = "/sendMessage"
+        
+        tg_url = part1 + part2 + part3 + token + method
         payload = json.dumps({"chat_id": CHANNEL_ID, "text": text}).encode('utf-8')
         
         req_tg = urllib.request.Request(
