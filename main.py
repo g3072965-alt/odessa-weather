@@ -1,12 +1,12 @@
 import os
-import json
+import urllib.parse
 import urllib.request
 from flask import Flask
 
 app = Flask(__name__)
 
-# Точный цифровой ID вашего приватного канала
-CHANNEL_ID = "-1002364375082"
+# ИСПРАВЛЕНО: Постоянное и точное имя вашего публичного канала
+CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
     try:
@@ -21,23 +21,28 @@ def run_bot():
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
             f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
+            "Бажаємо вам чутового та продуктивного дня! ✨"
         )
 
-        # 2. Маскируем адрес от старого кэша хостинга и собираем ссылку API Telegram
+        # 2. Собираем адрес API Telegram
         part1 = "https://api."
         part2 = "telegram"
         part3 = ".org/bot"
         token = "8959094212:AAEI5eaN8qGNnk5t8gAOIy7fVVLgNPuYpr4"
         method = "/sendMessage"
-        
         tg_url = part1 + part2 + part3 + token + method
-        payload = json.dumps({"chat_id": CHANNEL_ID, "text": text}).encode('utf-8')
+        
+        # ИСПРАВЛЕНО: Отправляем данные как обычную форму, которую Telegram одобряет без фильтров
+        data_dict = {
+            "chat_id": CHANNEL_ID,
+            "text": text
+        }
+        payload = urllib.parse.urlencode(data_dict).encode('utf-8')
         
         req_tg = urllib.request.Request(
             tg_url, 
             data=payload, 
-            headers={'Content-Type': 'application/json'}
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}
         )
         
         with urllib.request.urlopen(req_tg, timeout=10) as tg_response:
