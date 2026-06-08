@@ -5,17 +5,17 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Цифровой ID вашего приватного канала
-CHANNEL_ID = "-1002364375082"
+# ИСПРАВЛЕНО: Прямая текстовая ссылка на ваш приватный канал
+CHANNEL_ID = "https://t.me"
 
 def run_bot():
     try:
-        # 1. Запрос погоды для Одессы через системный urllib
+        # 1. Системный запрос живой погоды для Одессы через wttr.in
         weather_url = "https://wttr.in"
         req_weather = urllib.request.Request(weather_url, headers={'User-Agent': 'Mozilla/5.0'})
         
         with urllib.request.urlopen(req_weather, timeout=10) as response:
-            weather_data = response.text.strip() if hasattr(response, 'text') else response.read().decode('utf-8').strip()
+            weather_data = response.read().decode('utf-8').strip()
             
         text = (
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
@@ -24,7 +24,7 @@ def run_bot():
             "Бажаємо вам чутового та продуктивного дня! ✨"
         )
 
-        # 2. Маскируем адрес API от кэша Render (собираем из кусочек)
+        # 2. Маскируем адрес от кэша хостинга и собираем ссылку API Telegram
         part1 = "https://api."
         part2 = "telegram"
         part3 = ".org/bot"
