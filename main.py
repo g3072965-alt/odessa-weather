@@ -6,12 +6,15 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Имя вашего канала (с двумя буквами «s» и хвостиком day)
-CHANNEL_ID = "1002364375082"
+# ⚠️ ВСТАВЬТЕ СЮДА ВАШ СВЕЖИЙ ТОКЕН ИЗ BOTFATHER (сохранив кавычки!)
+NEW_TOKEN = "8853778240:AAHVYQPWB9d6Xoe8zSsIgUOr9-e-KB4HAFA"
+
+# Цифровой ID вашего канала, который гарантирует доставку напрямую
+CHANNEL_ID = "-1002364375082"
 
 def run_bot():
     try:
-        # 1. Запрос живой погоды для Одессы через wttr.in
+        # 1. Системный запрос живой погоды для Одессы через wttr.in
         weather_url = "https://wttr.in"
         req_weather = urllib.request.Request(weather_url, headers={'User-Agent': 'Mozilla/5.0'})
         
@@ -22,18 +25,12 @@ def run_bot():
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
             f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
+            "Бажаємо вам чутового та продуктивного дня! ✨"
         )
 
-        # 2. Прямая отправка сообщения методом POST формы (не конфликтует с getUpdates)
-        part1 = "https://api."
-        part2 = "telegram"
-        part3 = ".org/bot"
-        token = "8959094212:AAEI5eaN8qGNnk5t8gAOIy7fVVLgNPuYpr4"
+        # 2. Прямая отправка через Telegram API
+        tg_url = f"https://telegram.org{NEW_TOKEN}/sendMessage"
         
-        tg_url = part1 + part2 + part3 + token + "/sendMessage"
-        
-        # Передаем параметры обычной веб-формой
         data = urllib.parse.urlencode({"chat_id": CHANNEL_ID, "text": text}).encode('utf-8')
         req_tg = urllib.request.Request(tg_url, data=data, headers={'User-Agent': 'Mozilla/5.0'})
         
