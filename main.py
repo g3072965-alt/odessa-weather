@@ -4,8 +4,8 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Точный адрес вашего канала из скриншота (с одной буквой «s»)
-CHANNEL_ID = "@odesa_meteo"
+# ИСПРАВЛЕНО: Точное имя вашего публичного канала (с двумя буквами «s» и хвостиком day)
+CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
     try:
@@ -16,6 +16,7 @@ def run_bot():
         
         if response.status_code == 200:
             weather_data = response.text.strip()
+            
             text = (
                 "Доброго ранку, Одесо! 🌊⚓️\n\n"
                 "Погода на сьогодні:\n"
@@ -25,7 +26,7 @@ def run_bot():
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Ссылка API с точным токеном вашего нового бота
+        # Точный токен вашего нового бота @odessa_meteo_day_bot (с нулем '0')
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
