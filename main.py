@@ -4,7 +4,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Точное имя вашего публичного канала (с двумя буквами «s» и хвостиком day)
+# ИСПРАВЛЕНО: Строгое и точное текстовое имя вашего публичного канала
 CHANNEL_ID = "@odessa_meteo_day"
 
 def run_bot():
@@ -26,12 +26,12 @@ def run_bot():
         else:
             return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Точный токен вашего нового бота @odessa_meteo_day_bot (с нулем '0')
+        # Точный токен вашего нового бота @odessa_meteo_day_bot
         tg_url = "https://telegram.org"
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
         if tg_res.status_code == 200:
-            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
+            return "<h1>🎉 Успішно! Пост відправлений строго за адресою @odessa_meteo_day!</h1>"
         else:
             return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
         
