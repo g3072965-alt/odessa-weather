@@ -4,8 +4,8 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Строгое и точное текстовое имя вашего публичного канала
-CHANNEL_ID = "@odessa_meteo_day"
+# ИСПРАВЛЕНО: Жесткий цифровой ID вашего приватного канала из ссылки
+CHANNEL_ID = "-1002364375082"
 
 def run_bot():
     try:
@@ -31,7 +31,7 @@ def run_bot():
         tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
         
         if tg_res.status_code == 200:
-            return "<h1>🎉 Успішно! Пост відправлений строго за адресою @odessa_meteo_day!</h1>"
+            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в приватний Telegram-канал!</h1>"
         else:
             return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
         
