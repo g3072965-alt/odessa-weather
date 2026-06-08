@@ -1,44 +1,48 @@
 import os
-import requests
+import json
+import urllib.request
 from flask import Flask
 
 app = Flask(__name__)
 
-# ИСПРАВЛЕНО: Жесткий цифровой ID вашего приватного канала из ссылки
+# Цифровой ID вашего приватного канала
 CHANNEL_ID = "-1002364375082"
 
 def run_bot():
     try:
-        # Надежный текстовый запрос погоды для Одессы через wttr.in
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        url = "https://wttr.in"
-        response = requests.get(url, headers=headers, timeout=10)
+        # 1. Запрос погоды для Одессы через системный urllib
+        weather_url = "https://wttr.in"
+        req_weather = urllib.request.Request(weather_url, headers={'User-Agent': 'Mozilla/5.0'})
         
-        if response.status_code == 200:
-            weather_data = response.text.strip()
+        with urllib.request.urlopen(req_weather, timeout=10) as response:
+            weather_data = response.read().decode('utf-8').strip()
             
-            text = (
-                "Доброго ранку, Одесо! 🌊⚓️\n\n"
-                "Погода на сьогодні:\n"
-                f"📊 Дані: {weather_data}\n\n"
-                "Бажаємо вам чудового та продуктивного дня! ✨"
-            )
-        else:
-            return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
+        text = (
+            "Доброго ранку, Одесо! 🌊⚓️\n\n"
+            "Погода на сьогодні:\n"
+            f"📊 Дані: {weather_data}\n\n"
+            "Бажаємо вам чудового та продуктивного дня! ✨"
+        )
 
-        # Точный токен вашего нового бота @odessa_meteo_day_bot
+        # 2. Прямая системная отправка в Telegram без сторонних библиотек
         tg_url = "https://telegram.org"
-        tg_res = requests.post(tg_url, json={"chat_id": CHANNEL_ID, "text": text}, timeout=10)
+        payload = json.dumps({"chat_id": CHANNEL_ID, "text": text}).encode('utf-8')
         
-        if tg_res.status_code == 200:
-            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в приватний Telegram-канал!</h1>"
-        else:
-            return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
+        req_tg = urllib.request.Request(
+            tg_url, 
+            data=payload, 
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        with urllib.request.urlopen(req_tg, timeout=10) as tg_response:
+            res_text = tg_response.read().decode('utf-8')
+            
+        return f"<h1>🎉 Успішно! Системна відправка виконана!</h1><p>{res_text}</p>"
         
     except Exception as e:
-        return f"<h1>⚠️ Критична помилка в коді: {e}</h1>"
+        return f"<h1>⚠️ Критична помилка в системному коді:</h1><p>{e}</p>"
 
-@app.route('/')
+@app.route('/', methods=['GET', 'HEAD'])
 def index():
     return run_bot()
 
