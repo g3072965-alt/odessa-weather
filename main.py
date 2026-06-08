@@ -1,10 +1,6 @@
-import os
 import json
 import urllib.parse
 import urllib.request
-from flask import Flask
-
-app = Flask(__name__)
 
 def run_bot():
     try:
@@ -19,31 +15,26 @@ def run_bot():
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
             f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чутового та продуктивного дня! ✨"
+            "Бажаємо вам чудового та продуктивного дня! ✨"
         )
 
-        # Жестко вшитый точный новый токен и ID вашего приватного канала
+        # Жестко вшитый токен и ID вашего приватного канала
         token = "8853778240:AAHVYQPWB9d6Xoe8zSsIgUOr9-e-KB4HAFA"
         chat_id = "-1002364375082"
         
         tg_url = f"https://telegram.org{token}/sendMessage"
         
-        # Передаем параметры через стандартную форму формы
+        # Передаем параметры через стандартную форму
         data = urllib.parse.urlencode({"chat_id": chat_id, "text": text}).encode('utf-8')
         req_tg = urllib.request.Request(tg_url, data=data, headers={'User-Agent': 'Mozilla/5.0'})
         
         with urllib.request.urlopen(req_tg, timeout=10) as tg_response:
             res_text = tg_response.read().decode('utf-8')
             
-        return f"<h1>🎉 Успішно! Пост з живою погодою відправлений!</h1><p>{res_text}</p>"
+        print(f"УСПЕХ ТЕЛЕГРАМ: {res_text}")
         
     except Exception as e:
-        return f"<h1>⚠️ Критична помилка в коді:</h1><p>{e}</p>"
-
-@app.route('/', methods=['GET', 'HEAD'])
-def index():
-    return run_bot()
+        print(f"КРИТИЧЕСКАЯ ОШИБКА: {e}")
 
 if __name__ == "__main__":
-    # Фиксируем стандартный цифровой порт 10000, чтобы полностью убрать ошибку nonnumeric port
-    app.run(host="0.0.0.0", port=10000)
+    run_bot()
