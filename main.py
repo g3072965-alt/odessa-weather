@@ -7,7 +7,7 @@ from flask import Flask
 app = Flask(__name__)
 
 # Имя вашего канала (с двумя буквами «s» и хвостиком day)
-CHANNEL_ID = "@odessa_meteo_day"
+CHANNEL_ID = "1002364375082"
 
 def run_bot():
     try:
