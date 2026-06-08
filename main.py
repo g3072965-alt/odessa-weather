@@ -1,41 +1,47 @@
-import json
-import urllib.parse
-import urllib.request
+import os
+import requests
+from flask import Flask
+
+app = Flask(__name__)
 
 def run_bot():
     try:
-        # 1. Системный запрос живой погоды для Одессы через wttr.in
-        weather_url = "https://wttr.in"
-        req_weather = urllib.request.Request(weather_url, headers={'User-Agent': 'Mozilla/5.0'})
+        # 1. Запрос живой погоды для Одессы через wttr.in
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        url = "https://wttr.in"
+        response = requests.get(url, headers=headers, timeout=10)
         
-        with urllib.request.urlopen(req_weather, timeout=10) as response:
-            weather_data = response.read().decode('utf-8').strip()
-            
-        text = (
-            "Доброго ранку, Одесо! 🌊⚓️\n\n"
-            "Погода на сьогодні:\n"
-            f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
-        )
+        if response.status_code == 200:
+            weather_data = response.text.strip()
+            text = (
+                "Доброго ранку, Одесо! 🌊⚓️\n\n"
+                "Погода на сьогодні:\n"
+                f"📊 Дані: {weather_data}\n\n"
+                "Бажаємо вам чудового та продуктивного дня! ✨"
+            )
+        else:
+            return f"<h1>Помилка сервісу погоди: Status {response.status_code}</h1>"
 
-        # Жестко вшитый рабочий токен нового бота и ID вашего приватного канала
+        # 2. Железобетонная отправка в Telegram через библиотеку requests
         token = "8853778240:AAHVYQPWB9d6Xoe8zSsIgUOr9-e-KB4HAFA"
         chat_id = "-1002364375082"
         
-        # Полный исправленный адрес API Telegram без посторонних сайтов
         tg_url = f"https://telegram.org{token}/sendMessage"
+        tg_res = requests.post(tg_url, json={"chat_id": chat_id, "text": text}, timeout=10)
         
-        # Передаем параметры через стандартную форму
-        data = urllib.parse.urlencode({"chat_id": chat_id, "text": text}).encode('utf-8')
-        req_tg = urllib.request.Request(tg_url, data=data, headers={'User-Agent': 'Mozilla/5.0'})
-        
-        with urllib.request.urlopen(req_tg, timeout=10) as tg_response:
-            res_text = tg_response.read().decode('utf-8')
-            
-        print(f"УСПЕХ ТЕЛЕГРАМ: {res_text}")
+        if tg_res.status_code == 200:
+            return "<h1>🎉 Успішно! Пост з живою погодою відправлений в Telegram-канал!</h1>"
+        else:
+            return f"<h1>❌ Помилка Telegram: {tg_res.status_code}</h1><p>{tg_res.text}</p>"
         
     except Exception as e:
-        print(f"КРИТИЧЕСКАЯ ОШИБКА: {e}")
+        return f"<h1>⚠️ Критична помилка в коді:</h1><p>{e}</p>"
+
+@app.route('/', methods=['GET', 'HEAD'])
+def index():
+    return run_bot()
 
 if __name__ == "__main__":
-    run_bot()
+    # Читаем порт, который выдает Render, либо ставим стандартный 10000
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
