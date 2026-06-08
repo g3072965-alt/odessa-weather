@@ -19,16 +19,16 @@ def run_bot():
             "Доброго ранку, Одесо! 🌊⚓️\n\n"
             "Погода на сьогодні:\n"
             f"📊 Дані: {weather_data}\n\n"
-            "Бажаємо вам чудового та продуктивного дня! ✨"
+            "Бажаємо вам чутового та продуктивного дня! ✨"
         )
 
-        # Новый чистый токен и жесткий ID вашего приватного канала
+        # Жестко вшитый точный новый токен и ID вашего приватного канала
         token = "8853778240:AAHVYQPWB9d6Xoe8zSsIgUOr9-e-KB4HAFA"
         chat_id = "-1002364375082"
         
         tg_url = f"https://telegram.org{token}/sendMessage"
         
-        # Передаем параметры через стандартную форму
+        # Передаем параметры через стандартную форму формы
         data = urllib.parse.urlencode({"chat_id": chat_id, "text": text}).encode('utf-8')
         req_tg = urllib.request.Request(tg_url, data=data, headers={'User-Agent': 'Mozilla/5.0'})
         
@@ -45,5 +45,5 @@ def index():
     return run_bot()
 
 if __name__ == "__main__":
-    # Жестко прописываем стандартный порт 10000 без чтения ломающих переменных окружения
+    # Фиксируем стандартный цифровой порт 10000, чтобы полностью убрать ошибку nonnumeric port
     app.run(host="0.0.0.0", port=10000)
